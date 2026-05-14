@@ -111,12 +111,12 @@
 
                 const data = await response.json();
 
-                chatBox.innerHTML += `<div class="ai-msg">${data.reply}<div>`;
+                chatBox.innerHTML += `<div class="ai-msg">${data.reply}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
                 input.value = "";
             } catch (error) {
                 console.error("Error communicating with Python:", error);
-                chatBox.innerHTML += `<div class="ai-msg" styles="color:red;">Error connecting to Python server.</div>`;
+                chatBox.innerHTML += `<div class="ai-msg" style="color:red;">Error connecting to Python server.</div>`;
             }
         });
     </script>
