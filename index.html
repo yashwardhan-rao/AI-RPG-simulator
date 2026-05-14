@@ -35,7 +35,7 @@
             border-radius: 8px;
             line-height: 1.6;
         }
-        .usermsg {
+        .user-msg {
             color: #4dabf7;
             font-weight: bold;
             margin-bottom: 15px;
@@ -97,7 +97,7 @@
             const text = input.value.trim();
             if (text === "") return;
 
-            chatBox.innerHTML += `<div class="usr-msg">> You: ${text}</div>`;
+            chatBox.innerHTML += `<div class="user-msg">> You: ${text}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
             setTimeout(() => {
