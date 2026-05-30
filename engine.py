@@ -23,12 +23,13 @@ def get_gemini_stream(history, user_action):
     history: List of dictionaries [{'role': 'user'/'model', 'parts': ['text']}]
     user_action: String of the user's latest input
     """
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        system_instruction=SYSTEM_PROMPT
+    )
   
-    model_name="gemini-1.5-flash",
-    system_instruction=SYSTEM_PROMPT
-  
-chat = model.start_chat(history=history)
+    chat = model.start_chat(history=history)
 
-response = chat.send_message(user_action, stream=True)
+    response = chat.send_message(user_action, stream=True)
     
-return response
+    return response
