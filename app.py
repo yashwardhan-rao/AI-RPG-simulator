@@ -1,6 +1,22 @@
-from flask import Flask, render_template, request, jsonify
+import os
+import json
+from flask import Flask, render_template, request, jsonify 
+from dotenv import load_dotenv
+from models import db, GameSession
+
+load_dotenv()
 
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY','default-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///rpg.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+
 
 @app.route("/")
 def home():
