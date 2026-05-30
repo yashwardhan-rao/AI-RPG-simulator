@@ -1,6 +1,7 @@
 import os
 import json
-from flask import Flask, render_template, request, jsonify 
+from flask import Flask, render_template, request, jsonify, Response, stream_with_context
+import engine
 from dotenv import load_dotenv
 from models import db, GameSession
 
@@ -25,20 +26,36 @@ def home():
 @app.route("/action", methods=["POST"])
 def action():
     data = request.json
-    user_message = data.get("action", "").lower()
+    user_message = data.get("action", "")
 
-    if "attack" in user_message:
-        reply = "You swing your sword with all your might!"
-    elif "look" in user_message:
-        reply = "You look around and see a dark, damp cave with a glowing stone in the corner."
-    elif "inventory" in user_message:
-        reply = "You check your pockets... Empty, except for a bit of lint."
-    elif "hello" in user_message or "hi" in user_message:
-        reply = "Greetings, traveler! What do you wish to do?"
-    else:
-        reply = "I don't understand that command. Try 'look', 'attack', or 'inventory'."
+    session = GameSession.query.first()
+    if not session:
+        session = GameSession()
+        db.session.add(session)
+        db.session.commit()
+    
+    history = json.loads(session.history_json)
 
-    return jsonify({"reply": reply})
+    def generate():
+        ai_full_response = ""
+        try:
+            response_stream = engine.get_gemini_stream(history, user_message)
 
+            for chunk in response_stream:
+                if chunk.text:
+                    ai_full_response += chunk.text
+                    yield f"data: {json.dumps({'chunk': chunk.text})}\n\n"
+
+            history.append({"role": "user", "parts":[user_message]})
+            history.append({"role":"model","parts":[ai_full_response]})
+
+            session.history_json = json.dumps(history)
+            db.session.commit()
+
+        except Exception as e:
+            print(f"Error: {e}")
+            yield f"data:{json.dumps({'error':'The Game Master encountered an error.'})}\n\n"
+
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')        
 if __name__ == "__main__":
     app.run(debug=True)
